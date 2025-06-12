@@ -71,7 +71,7 @@ def grad(func: Callable[[TTTensOrMat], float]) -> Callable[[TTTensOrMat], Tangen
     function_value, cores_grad = jax.value_and_grad(augmented_func)(deltas)
 
     deltas = _enforce_gauge_conditions(cores_grad, left)
-    return riemannian.deltas_to_tangent(deltas, x)
+    return deltas
   return _grad
 
 
@@ -123,15 +123,14 @@ def hessian_vector_product(func: Callable[[TTTensOrMat], float]) -> Callable[[TT
       function_value, cores_grad = jax.value_and_grad(augmented_inner_func)(deltas_outer)
       # TODO: support runtime checks
 
-      vector_projected = project(vector, x)
-      vec_deltas = riemannian.tangent_to_deltas(vector_projected)
+      vec_deltas = project(vector, x)
       products = [jnp.sum(a * b) for a, b in zip(cores_grad, vec_deltas)]
       return sum(products)
 
     _, second_cores_grad = jax.value_and_grad(augmented_outer_func)(deltas)
     final_deltas = _enforce_gauge_conditions(second_cores_grad, left)
     # TODO: pass left and right?
-    return riemannian.deltas_to_tangent(final_deltas, x)
+    return final_deltas
   return _hess_by_vec
 
 
