@@ -24,6 +24,7 @@ import copy
 from ttax import ops
 from ttax.base_class import TT
 from ttax.base_class import TTMatrix
+from ttax.base_class import TTTensOrMat
 
 # You can use this in TT-einsum expressions. It will be 'i' when working with
 # TT-tensors and 'ij' when working with TT-matrices.
@@ -39,7 +40,9 @@ class WrappedTT:
   this class, to track that.
   """
 
-  def __init__(self, tt: TT, tt_inputs=None, tt_einsum=None):
+  def __init__(self, tt: TTTensOrMat, tt_inputs=None, tt_einsum=None):
+    if not isinstance(tt, TTTensOrMat):
+      raise TypeError('tt must be an instance of TTTensOrMat class, got %s' % type(tt))
     self.tt = tt
     self.tt_inputs = tt_inputs
     self.tt_einsum = tt_einsum
@@ -400,7 +403,7 @@ def compile_cumulative(tt_einsum: TTEinsum) -> Callable:
   return new_func
 
 
-def fuse(func):
+def fuse(func, argnums = None):
   """Fuse a composite function to make it faster.
 
   Example:
@@ -430,7 +433,7 @@ def fuse(func):
   """
 
   def _func(*args):
-    wrapped_args = [WrappedTT(arg) for arg in args]
+    wrapped_args = [WrappedTT(arg) if ((argnums is None or i in argnums) and not isinstance(arg, WrappedTT)) else arg for (i, arg) in enumerate(args)]
     res = func(*wrapped_args)
     if isinstance(res, WrappedTT):
       res = res.tt
