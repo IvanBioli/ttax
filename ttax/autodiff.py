@@ -108,7 +108,7 @@ def hessian_vector_product(func: Callable[[TTTensOrMat], float]) -> Callable[[TT
     See also:
         `ttax.grad`
     """
-  def _hess_by_vec(x: TTTensOrMat, vector: TangentVector) -> TangentVector:
+  def _hess_by_vec(x: TTTensOrMat, vec_deltas: TangentVector) -> TangentVector:
     left = decompositions.orthogonalize(x)
     right = decompositions.orthogonalize(left, left_to_right=False)
     deltas = [right.tt_cores[0]]
@@ -123,7 +123,6 @@ def hessian_vector_product(func: Callable[[TTTensOrMat], float]) -> Callable[[TT
       function_value, cores_grad = jax.value_and_grad(augmented_inner_func)(deltas_outer)
       # TODO: support runtime checks
 
-      vec_deltas = project(vector, x)
       products = [jnp.sum(a * b) for a, b in zip(cores_grad, vec_deltas)]
       return sum(products)
 
