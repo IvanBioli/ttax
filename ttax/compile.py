@@ -222,7 +222,7 @@ class TTEinsum:
     # TODO: add upper case
     vacant_letters = [l for l in ascii_lowercase if l not in distinct_from_einsum]
     einsum = self.to_vanilla_einsum()
-    curr_unique_letters = [l for l in einsum if l in ascii_lowercase]
+    curr_unique_letters = [l for l in ascii_lowercase if l in einsum]
     mapping = {}
     for i, l in enumerate(curr_unique_letters):
       mapping[l] = vacant_letters[i]
